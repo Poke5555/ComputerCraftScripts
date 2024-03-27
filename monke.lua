@@ -1,3 +1,36 @@
+local version = "1.0"  -- Current version number
+
+-- Function to check for updates
+local function checkForUpdates()
+    local url = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
+    local response = http.get(url)
+    if response then
+        local latestScript = response.readAll()
+        response.close()
+        
+        local latestVersion = latestScript:match('local version = "(.-)"')
+        if latestVersion and latestVersion ~= version then
+            print("A new version (" .. latestVersion .. ") is available. Do you want to update? (yes/no)")
+            local input = read()
+            if input:lower() == "yes" then
+                local file = fs.open(shell.getRunningProgram(), "w")
+                file.write(latestScript)
+                file.close()
+                print("Update successful. Please restart the program.")
+                return true
+            end
+        else
+            print("You are using the latest version.")
+        end
+    else
+        print("Failed to check for updates.")
+    end
+    return false
+end
+
+-- Check for updates on startup
+checkForUpdates()
+
 term.clear()  -- Clear the screen before displaying the next acronym
 term.setCursorPos(1, 1)  -- Move cursor to the top-left corner
 print("Master of Operations, Networking, and Keeping Everything")
