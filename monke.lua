@@ -1,4 +1,4 @@
-local version = "1.5"  -- Current version number
+local version = "1.0"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
