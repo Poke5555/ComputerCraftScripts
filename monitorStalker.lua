@@ -1,3 +1,5 @@
+--To use script put 6x6 monitor on right side of PC and a playerDetector on any side of PC!
+
 local monitor = peripheral.wrap("right")  -- Assuming the monitor is on the right
 local player_detector = peripheral.find("playerDetector")
 local function displayPlayerInfo(playerInfo)
