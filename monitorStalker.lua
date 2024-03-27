@@ -1,7 +1,7 @@
 --To use script put 6x6 monitor on right side of PC and a playerDetector on any side of PC!
-
 local monitor = peripheral.wrap("right")  -- Assuming the monitor is on the right
 local player_detector = peripheral.find("playerDetector")
+
 local function displayPlayerInfo(playerInfo)
     monitor.clear()
 
@@ -12,7 +12,7 @@ local function displayPlayerInfo(playerInfo)
     -- Calculate column widths based on the longest item in each column
     for _, player in ipairs(playerInfo) do
         for _, columnName in ipairs(columnNames) do
-            local columnWidth = #tostring(player[columnName])
+            local columnWidth = #tostring(player[columnName] or "nil")
             if not columnWidths[columnName] or columnWidth > columnWidths[columnName] then
                 columnWidths[columnName] = columnWidth
                 totalWidth = totalWidth + columnWidths[columnName]
@@ -42,7 +42,7 @@ local function displayPlayerInfo(playerInfo)
         x = startX
         for _, columnName in ipairs(columnNames) do
             monitor.setCursorPos(x, y)
-            local value = player[columnName]
+            local value = player[columnName] or "nil"
             monitor.write(" " .. tostring(value) .. string.rep(" ", columnWidths[columnName] - #tostring(value)) .. " ")  -- Add space after each value
             if columnName ~= " Dimension" then
                 monitor.setCursorPos(x + columnWidths[columnName] + 2, y) -- Adjust cursor position to account for spacing between columns
@@ -59,20 +59,24 @@ local function getOnlinePlayersInfo()
     local onlinePlayers = player_detector.getOnlinePlayers()
     for _, player in ipairs(onlinePlayers) do
         local pos = player_detector.getPlayerPos(player)
-        playerInfo[#playerInfo + 1] = {
-            [" Name"] = player,
-            [" Pos"] = pos.x .. ", " .. pos.y .. ", " .. pos.z,
-            [" HP"] = string.format("%.f", pos.health),
-            [" Pitch/Yaw"] = string.format("%.f", pos.pitch) .. ", " .. string.format("%.f", pos.yaw),
-            [" Dimension"] = string.match(pos.dimension, ":(.+)"),
-        }
+        if pos then
+            local x, y, z = pos.x or "nil", pos.y or "nil", pos.z or "nil"
+            local hp = pos.health and string.format("%.f", pos.health) or "nil"
+            local pitchYaw = (pos.pitch and pos.yaw) and (string.format("%.f", pos.pitch) .. ", " .. string.format("%.f", pos.yaw)) or "nil, nil"
+            local dimension = pos.dimension and string.match(pos.dimension, ":(.+)") or "nil"
+            playerInfo[#playerInfo + 1] = {
+                [" Name"] = player,
+                [" Pos"] = x .. ", " .. y .. ", " .. z,
+                [" HP"] = hp,
+                [" Pitch/Yaw"] = pitchYaw,
+                [" Dimension"] = dimension,
+            }
+        end
     end
     return playerInfo
 end
 
--- Main loop
-while true do
-    local playerInfo = getOnlinePlayersInfo()
-    displayPlayerInfo(playerInfo)
-
-end
+    while true do
+        local playerInfo = getOnlinePlayersInfo()
+        displayPlayerInfo(playerInfo)
+    end
