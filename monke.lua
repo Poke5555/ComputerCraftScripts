@@ -1,4 +1,4 @@
-local version = "1.4"  -- Current version number
+local version = "1.5"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -10,28 +10,30 @@ local function checkForUpdates()
         
         local latestVersion = latestScript:match('local version = "(.-)"')
         if latestVersion and latestVersion ~= version then
-            chatBox.sendMessage("A new version (" .. latestVersion .. ") is available. Do you want to update? (yes/no)", "&lm.o.n.k.e")
-            local _, message = os.pullEvent("chat")
-            if message:lower() == "yes" then
+            print("A new version (" .. latestVersion .. ") is available. Do you want to update? (yes/no)")
+            local input = read()
+            if input:lower() == "yes" then
                 local file = fs.open(shell.getRunningProgram(), "w")
                 file.write(latestScript)
                 file.close()
-                chatBox.sendMessage("Update successful. Please restart the program.", "&lm.o.n.k.e")
+                print("Update successful. Please restart the program.")
                 return true
             end
         else
-            chatBox.sendMessage("You are using the latest version.", "&lm.o.n.k.e")
+            print("You are using the latest version.")
         end
     else
-        chatBox.sendMessage("Failed to check for updates.", "&lm.o.n.k.e")
+        print("Failed to check for updates.")
     end
     return false
 end
 
+-- Check for updates on startup
+checkForUpdates()
+
 term.clear()  -- Clear the screen before displaying the next acronym
 term.setCursorPos(1, 1)  -- Move cursor to the top-left corner
 print("Master of Operations, Networking, and Keeping Everything")
-print("hello")
 
 -- Find the RS Bridge peripheral
 local rsBridge = peripheral.find("rsBridge")
