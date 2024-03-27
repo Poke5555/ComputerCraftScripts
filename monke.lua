@@ -31,6 +31,7 @@ end
 term.clear()  -- Clear the screen before displaying the next acronym
 term.setCursorPos(1, 1)  -- Move cursor to the top-left corner
 print("Master of Operations, Networking, and Keeping Everything")
+print("hello")
 
 -- Find the RS Bridge peripheral
 local rsBridge = peripheral.find("rsBridge")
