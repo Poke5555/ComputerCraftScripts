@@ -1,4 +1,4 @@
-local version = "1.0.1"  -- Current version number
+local version = "1.1"  -- Current version number
 
 -- Function to check for updates
 local function checkForUpdates()
