@@ -1,4 +1,4 @@
-local version = "1.5"  -- Current version number
+local version = "1.6"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -47,6 +47,12 @@ if not chatBox then
     error("Chat Box peripheral not found!")
 end
 
+-- Find the Chat Box peripheral
+local player_detector = peripheral.find("playerDetector")
+if not player_detector then
+    error("playerDetector peripheral not found!")
+end
+
 -- Define a table to store shorthand mappings
 local itemMappings = {}
 
@@ -89,6 +95,48 @@ end
 
 -- Call loadItemMappingsFromFile function to load mappings when the script starts
 loadItemMappingsFromFile()
+
+-- Define the player mappings table
+local playerMappings = {}
+
+-- Function to save player mappings to a file
+local function savePlayerMappingsToFile()
+    local file = fs.open("playerMappings.txt", "w")
+    if not file then
+        error("Unable to open file for writing.")
+    end
+    file.write(textutils.serialize(playerMappings))
+    file.close()
+end
+
+-- Function to load player mappings from a file
+local function loadPlayerMappingsFromFile()
+    if fs.exists("playerMappings.txt") then
+        local file = fs.open("playerMappings.txt", "r")
+        if file then
+            local data = file.readAll()
+            file.close()
+            playerMappings = textutils.unserialize(data) or {}
+        else
+            error("Unable to open file for reading.")
+        end
+    else
+        savePlayerMappingsToFile()  -- Create a new file if it doesn't exist
+    end
+end
+
+-- Function to handle the "monke playermap" command
+local function handlePlayerMapCommand(shortName, playerName)
+    -- Your implementation here
+    -- This function should handle the mapping of shortName to playerName
+    -- For example, you can add the mapping to the playerMappings table
+    playerMappings[shortName] = playerName
+    savePlayerMappingsToFile()  -- Save the updated mappings to file
+    chatBox.sendMessage("Mapped '" .. shortName .. "' to '" .. playerName .. "'", "&lm.o.n.k.e")
+end
+
+-- Call loadPlayerMappingsFromFile function to load mappings when the script starts
+loadPlayerMappingsFromFile()
 
 -- Define a table to store permitted users
 local permittedUsers = {}
@@ -309,6 +357,36 @@ local function craftItems(item, amount)
     end
 end
 
+-- Function to handle the "monke find" command
+local function handleFindCommand(player)
+    -- Check if the player is mapped
+    local fullName = playerMappings[player]
+    if fullName then
+        player = fullName  -- Use the mapped player name
+    end
+    
+    -- Check if the player exists in the server
+    local playerExists = peripheral.find("playerDetector").getPlayerPos(player)
+    if playerExists then
+        -- Get the position of the player and print their coordinates
+        local pos = player_detector.getPlayerPos(player)
+        if pos then
+            local message = player .. " is "
+            if pos.x and pos.y and pos.z and pos.dimension then
+                message = message .. "at "  .. pos.x .. ", " .. pos.y .. ", " .. pos.z .. " in the " .. pos.dimension
+            else
+                message = message .. "not a recognized player"
+            end
+            chatBox.sendMessage(message, "&lm.o.n.k.e")
+        else
+            chatBox.sendMessage("Position of player " .. player .. " not found.", "&lm.o.n.k.e")
+        end
+    else
+        chatBox.sendMessage("Player " .. player .. " not found.", "&lm.o.n.k.e")
+    end
+end
+
+
 
 -- Event listener function
 local function eventListener(event, ...)
@@ -320,7 +398,20 @@ local function eventListener(event, ...)
         local command, args = message:match("^%s*([%w]+)%s*(.*)$")
         if command == "monke" then
             local subCommand, subArgs = args:match("^%s*([%w]+)%s*(.*)$")
-            if subCommand == "give" or subCommand == "send" or subCommand == "export" then
+            if subCommand == "find" or subCommand == "locate" then
+                if permitted then
+                    handleFindCommand(subArgs)
+                else
+                    chatBox.sendMessage("You lack the authority to command me, peasant...", "&lm.o.n.k.e")
+                end
+            elseif subCommand == "playermap" then
+                local player, fullName = subArgs:match("([%w]+) (.+)")
+                if player and permitted and fullName then
+                    handlePlayerMapCommand(player, fullName)
+                else
+                    chatBox.sendMessage("Usage: monke playermap <player> <fullName>", "&lm.o.n.k.e")
+                end
+            elseif subCommand == "give" or subCommand == "send" or subCommand == "export" then
                 local amount, itemName = subArgs:match("([%w%s]+) (.+)")
                 if amount and itemName and permitted then
                     handleGiveCommand(amount, itemName)
@@ -376,3 +467,4 @@ end
 while true do
     eventListener(os.pullEvent())
 end
+
