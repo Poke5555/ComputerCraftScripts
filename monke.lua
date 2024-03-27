@@ -1,4 +1,4 @@
-local version = "1.1"  -- Current version number
+local version = "1.0"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -27,6 +27,9 @@ local function checkForUpdates()
     end
     return false
 end
+
+-- Check for updates on startup
+checkForUpdates()
 
 term.clear()  -- Clear the screen before displaying the next acronym
 term.setCursorPos(1, 1)  -- Move cursor to the top-left corner
