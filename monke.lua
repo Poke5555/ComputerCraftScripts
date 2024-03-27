@@ -1,4 +1,4 @@
-local version = "1.7"  -- Current version number
+local version = "1.8"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -91,7 +91,6 @@ local function handleMapCommand(shortName, fullName)
     saveItemMappingsToFile()  -- Save the updated mappings to file
     chatBox.sendMessage("Mapped '" .. shortName .. "' to '" .. fullName .. "'", "&lm.o.n.k.e")
 end
-
 
 -- Call loadItemMappingsFromFile function to load mappings when the script starts
 loadItemMappingsFromFile()
@@ -302,7 +301,6 @@ local function saveWelcomeMessagesToFile(messages)
     file.close()
 end
 
- 
  -- Function to read welcome messages from file
 local function readWelcomeMessagesFromFile()
     local messages = {}
@@ -330,7 +328,6 @@ local function readWelcomeMessagesFromFile()
     return messages
 end
 
- 
 -- Function to send a random welcome message to a player
 local function sendWelcomeMessage(player)
     local messages = readWelcomeMessagesFromFile()
@@ -359,8 +356,11 @@ end
 
 -- Function to handle the "monke find" command
 local function handleFindCommand(player)
+    -- Convert player name to lowercase for case-insensitive lookup
+    local lowercasePlayer = player:lower()
+
     -- Check if the player is mapped
-    local fullName = playerMappings[player]
+    local fullName = playerMappings[lowercasePlayer]
     if fullName then
         player = fullName  -- Use the mapped player name
     end
@@ -371,9 +371,10 @@ local function handleFindCommand(player)
         -- Get the position of the player and print their coordinates
         local pos = player_detector.getPlayerPos(player)
         if pos then
+            local dimension = (pos.dimension or ""):gsub("^.+:", "")  -- Remove prefix from dimension name
             local message = player .. " is "
-            if pos.x and pos.y and pos.z and pos.dimension then
-                message = message .. "at "  .. pos.x .. ", " .. pos.y .. ", " .. pos.z .. " in the " .. pos.dimension
+            if pos.x and pos.y and pos.z and dimension then
+                message = message .. "at (" .. pos.x .. ", " .. pos.y .. ", " .. pos.z .. ") in the " .. dimension .. "."
             else
                 message = message .. "not a recognized player"
             end
@@ -385,8 +386,6 @@ local function handleFindCommand(player)
         chatBox.sendMessage("Player " .. player .. " not found.", "&lm.o.n.k.e")
     end
 end
-
-
 
 -- Event listener function
 local function eventListener(event, ...)
