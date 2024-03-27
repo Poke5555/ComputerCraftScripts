@@ -14,12 +14,6 @@ if not chatBox then
     error("Chat Box peripheral not found!")
 end
 
--- Find the Player Detector peripheral
-local player_detector = peripheral.find("playerDetector")
-if not player_detector then
-    error("Player Detector peripheral not found!")
-end
-
 -- Define a table to store shorthand mappings
 local itemMappings = {}
 
@@ -282,41 +276,6 @@ local function craftItems(item, amount)
     end
 end
 
--- Function to get online players
-local function getOnlinePlayers()
-    return player_detector.getOnlinePlayers()
-end
-
--- Function to get a player's health using getPlayerPos
-local function getPlayerHealth(username)
-    -- Get the position of the player
-    local pos = player_detector.getPlayerPos(username)
-    
-    -- Check if the player position is valid
-    if pos then
-        -- Check if the 'health' property exists in the player's position table
-        if pos.health then
-            return pos.health
-        else
-            print("Error: Player health not found.")
-            return nil
-        end
-    else
-        print("Error: Player position not found.")
-        return nil
-    end
-end
-
--- Function to send a message if any player has 10 health
-local function checkPlayerHealthAndSendAlert()
-    local onlinePlayers = getOnlinePlayers()
-    for _, player in ipairs(onlinePlayers) do
-        local health = getPlayerHealth(player)
-        if health == 20 then
-            chatBox.sendMessage("Player " .. player .. " has 10 health!", "&lm.o.n.k.e")
-        end
-    end
-end
 
 -- Event listener function
 local function eventListener(event, ...)
@@ -374,7 +333,6 @@ local function eventListener(event, ...)
                 chatBox.sendMessage("You lack the authority to command me, peasant...", "&lm.o.n.k.e")
             end
         end
-        
     elseif event == "playerJoin" then
         local username, dimension = ...
         sendWelcomeMessage(username)
@@ -384,8 +342,4 @@ end
 -- Main event loop
 while true do
     eventListener(os.pullEvent())
-    -- Check player health and send alert if necessary
-    checkPlayerHealthAndSendAlert()
-    -- Sleep for a short duration to avoid spamming
-    os.sleep(5)  -- Adjust the sleep duration as needed
 end
