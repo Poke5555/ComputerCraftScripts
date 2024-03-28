@@ -1,3 +1,10 @@
+--To use, place computer next to rsBridge that is connect to a Refined Storage system that has crafting capabilities.
+--The command use is `craft <amount> <item>` modded items need the prefix "refinedstorage:quartz_enriched_iron". Vanilla items do not "waxed_weathered_cut_copper_stairs" but you can if you want.
+--When using the command it will craft the amount of items requested, if you do not have enough items to craft the entire amount it prints amount of items you are missing.
+--Unless you have a pattern for the missing item, it will be off by the amount of items given by the pattern "1 iron_block is 9 iron_ingot" so the system will always think it has 9 less iron than it really does.
+--I will fix this at some point. currently the only way i can think of to fix it is make it = 0 if the system contains the amount of items crafted from the pattern "for iron 1-8 & 10-ininity would work, but 9 would be 0".
+--This issue is caused because the rsBridge read the pattern in the system as its results, once the item is in the system the rsBridge just sees the item.
+
 -- Find the RS Bridge peripheral
 local rsBridge = peripheral.find("rsBridge")
 
