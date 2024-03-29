@@ -1,4 +1,4 @@
-local version = "1.9"  -- Current version number
+local version = "1.10"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -387,6 +387,123 @@ local function handleFindCommand(player)
     end
 end
 
+-- Function to handle the "craft" command
+local function handleCraftCommand(itemMappings, craftAmount, craftItem)
+    -- Convert words to numbers if necessary
+    local numericAmount = tonumber(craftAmount)
+    if not numericAmount then
+        numericAmount = wordsToNumber(craftAmount)
+    end
+    
+    -- Map the item name using itemMappings
+    local mappedCraftItem = itemMappings[craftItem:lower()] or craftItem
+    
+    -- Get the crafting pattern for the mapped item
+    local pattern, errorMessage = rsBridge.getPattern({ name = mappedCraftItem })
+
+    -- Check if the crafting pattern was successfully retrieved
+    if pattern then
+        -- Determine the crafting multiplier based on the number of outputs
+        local craftingMultiplier = 1
+        if pattern.outputs and #pattern.outputs > 0 then
+            craftingMultiplier = math.ceil(numericAmount / pattern.outputs[1].amount)
+        end
+        
+        -- Table to store aggregated amounts for each input name
+        local aggregatedInputs = {}
+        
+        -- Iterate over the inputs and aggregate amounts
+        for _, inputList in ipairs(pattern.inputs) do
+            for _, input in ipairs(inputList) do
+                -- Check if the input has a name and amount property
+                if input and input.name and input.amount then
+                    -- Map the input name using itemMappings
+                    local mappedInputName = itemMappings[input.name:lower()] or input.name
+                    -- Aggregate the amounts for each input name
+                    if not aggregatedInputs[mappedInputName] then
+                        aggregatedInputs[mappedInputName] = input.amount
+                    else
+                        aggregatedInputs[mappedInputName] = aggregatedInputs[mappedInputName] + input.amount
+                    end
+                else
+                    chatBox.sendMessage("Invalid input item found", "&lm.o.n.k.e")
+                    return
+                end
+            end
+        end
+        
+        -- Calculate the total required amount
+        local totalRequiredAmount = 0
+        for _, requiredAmount in pairs(aggregatedInputs) do
+            totalRequiredAmount = totalRequiredAmount + requiredAmount * craftingMultiplier
+        end
+        
+        -- If there are items missing, collect the details
+        local itemsMissing = {}
+        for name, requiredAmount in pairs(aggregatedInputs) do
+            local itemInfo = rsBridge.getItem({ name = name })
+            if itemInfo and itemInfo.amount then
+                -- Check if the item has a pattern and calculate the amount obtained from the pattern
+                local patternAmount = 0
+                local patternInfo = rsBridge.getPattern({ name = name })
+                if patternInfo then
+                    patternAmount = patternInfo.outputs[1].amount
+                end
+                
+                local missingAmount = requiredAmount * craftingMultiplier - (itemInfo.amount - patternAmount)
+                if missingAmount > 0 then
+                    -- Retrieve the display name from the pattern
+                    local displayName
+                    for _, inputList in ipairs(pattern.inputs) do
+                        for _, input in ipairs(inputList) do
+                            -- Map the input name using itemMappings
+                            local mappedInputName = itemMappings[input.name:lower()] or input.name
+                            if mappedInputName == name then
+                                displayName = input.displayName
+                                break
+                            end
+                        end
+                        if displayName then break end
+                    end
+                    itemsMissing[name] = { displayName = displayName, amount = missingAmount, multiplier = craftingMultiplier }
+                end
+            else
+                chatBox.sendMessage("Failed to retrieve information for " .. name, "&lm.o.n.k.e")
+                return
+            end
+        end
+        
+        -- If there are items missing, print the details
+        if next(itemsMissing) then
+            local missingItemsMessage = "Missing items:"
+            for itemName, itemData in pairs(itemsMissing) do
+                missingItemsMessage = missingItemsMessage .. "\n- " .. itemData.amount .. " " .. itemData.displayName
+            end
+            chatBox.sendMessage(missingItemsMessage, "&lm.o.n.k.e")
+        else
+            -- If there are enough items, perform the craft
+            rsBridge.craftItem({ name = mappedCraftItem, count = numericAmount }) -- Ensure that only <craftItem> is crafted
+            chatBox.sendMessage("Crafting " .. numericAmount .. " " .. mappedCraftItem .. ".", "&lm.o.n.k.e")
+        end
+    else
+        if not errorMessage then
+            errorMessage = "Unknown error"
+        end
+        chatBox.sendMessage("Missing pattern for " .. mappedCraftItem .. ".", "&lm.o.n.k.e")
+    end
+end
+
+-- Function to handle the "craft" command
+local function handleCraftCommandMessage(itemMappings, amount, itemName)
+    local numericAmount = tonumber(amount)
+    if numericAmount then
+        itemName = itemName:lower()
+        handleCraftCommand(itemMappings, numericAmount, itemName)
+    else
+        chatBox.sendMessage("Error: Invalid amount.", "&lm.o.n.k.e")
+    end
+end
+
 -- Event listener function
 local function eventListener(event, ...)
     if event == "chat" then
@@ -427,16 +544,20 @@ local function eventListener(event, ...)
                     end
                 end
             elseif subCommand == "craft" or subCommand == "make" then
-                if permitted then
-                    local amount, itemName = subArgs:match("([%w%s]+) (.+)")
-                    local numericAmount = tonumber(amount)
-                    if numericAmount and itemName then
-                        itemName = itemName:lower()
-                        craftItems({name = itemName}, numericAmount)
-                    else
-                        chatBox.sendMessage("Usage: monke craft <amount> <item>", "&lm.o.n.k.e")
-                    end
-                end
+    if permitted then
+        local amount, itemName = subArgs:match("([%w%s]+) (.+)")
+        local numericAmount = tonumber(amount)
+        if not numericAmount then
+            numericAmount = wordsToNumber(amount)
+        end
+        if numericAmount and itemName then
+            itemName = itemName:lower()
+            handleCraftCommand(itemMappings, numericAmount, itemName) -- Pass itemMappings as an argument
+        else
+            chatBox.sendMessage("Usage: monke craft <amount> <item>", "&lm.o.n.k.e")
+        end
+    end
+
             elseif subCommand == "suck" or subCommand == "import" or subCommand == "clear" then
                 if permitted then
                     importAllItemsFromChest()
@@ -462,8 +583,8 @@ local function eventListener(event, ...)
     end
 end
 
+
 -- Main event loop
 while true do
     eventListener(os.pullEvent())
 end
-
