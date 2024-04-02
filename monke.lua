@@ -1,4 +1,4 @@
-local version = "1.14"  -- Current version number
+local version = "1.15"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -513,68 +513,53 @@ local function eventListener(event, ...)
         -- Handle chat commands here
         local command, args = message:match("^%s*([%w]+)%s*(.*)$")
         if command == "monke" then
+            if not permitted then
+                chatBox.sendMessage("You lack the authority to command me, peasant...", "&lm.o.n.k.e")
+                return
+            end
+
             local subCommand, subArgs = args:match("^%s*([%w]+)%s*(.*)$")
             if subCommand == "find" or subCommand == "locate" then
-                if permitted then
-                    handleFindCommand(subArgs)
-                else
-                    chatBox.sendMessage("You lack the authority to command me, peasant...", "&lm.o.n.k.e")
-                end
+                handleFindCommand(subArgs)
             elseif subCommand == "playermap" then
                 local player, fullName = subArgs:match("([%w]+) (.+)")
-                if player and permitted and fullName then
+                if player and fullName then
                     handlePlayerMapCommand(player, fullName)
                 else
                     chatBox.sendMessage("Usage: monke playermap <player> <fullName>", "&lm.o.n.k.e")
                 end
             elseif subCommand == "give" or subCommand == "send" or subCommand == "export" then
                 local amount, itemName = subArgs:match("([%w%s]+) (.+)")
-                if amount and itemName and permitted then
+                if amount and itemName then
                     handleGiveCommand(amount, itemName)
                 else
                     chatBox.sendMessage("Usage: monke give <amount> <item>", "&lm.o.n.k.e")
                 end
             elseif subCommand == "map" then
-                if permitted then
-                    local shortName, fullName = subArgs:match("([%w%s]+) (.+)")
-                    if shortName and fullName then
-                        handleMapCommand(shortName, fullName)
-                    else
-                        chatBox.sendMessage("Usage: monke map <shortName> <fullName>", "&lm.o.n.k.e")
-                    end
+                local shortName, fullName = subArgs:match("([%w%s]+) (.+)")
+                if shortName and fullName then
+                    handleMapCommand(shortName, fullName)
+                else
+                    chatBox.sendMessage("Usage: monke map <shortName> <fullName>", "&lm.o.n.k.e")
                 end
             elseif subCommand == "craft" or subCommand == "make" then
-    if permitted then
-        local amount, itemName = subArgs:match("([%w%s]+) (.+)")
-        local numericAmount = tonumber(amount)
-        if not numericAmount then
-            numericAmount = wordsToNumber(amount)
-        end
-        if numericAmount and itemName then
-            itemName = itemName:lower()
-            handleCraftCommand(itemMappings, numericAmount, itemName) -- Pass itemMappings as an argument
-        else
-            chatBox.sendMessage("Usage: monke craft <amount> <item>", "&lm.o.n.k.e")
-        end
-    end
-
+                local amount, itemName = subArgs:match("([%w%s]+) (.+)")
+                local numericAmount = tonumber(amount)
+                if numericAmount and itemName then
+                    itemName = itemName:lower()
+                    handleCraftCommand(itemMappings, numericAmount, itemName) -- Pass itemMappings as an argument
+                else
+                    chatBox.sendMessage("Usage: monke craft <amount> <item>", "&lm.o.n.k.e")
+                end
             elseif subCommand == "suck" or subCommand == "import" or subCommand == "clear" then
-                if permitted then
-                    importAllItemsFromChest()
-                end
+                importAllItemsFromChest()
             elseif subCommand == "count" then
-                if permitted then
-                    local itemName = subArgs:match("^%s*(.+)$")
-                    if itemName then
-                        countItemInSystem(itemName:lower())
-                    else
-                        chatBox.sendMessage("Usage: monke count <item>", "&lm.o.n.k.e")
-                    end
+                local itemName = subArgs:match("^%s*(.+)$")
+                if itemName then
+                    countItemInSystem(itemName:lower())
+                else
+                    chatBox.sendMessage("Usage: monke count <item>", "&lm.o.n.k.e")
                 end
-            end
-            
-            if not permitted then
-                chatBox.sendMessage("You lack the authority to command me, peasant...", "&lm.o.n.k.e")
             end
         end
     elseif event == "playerJoin" then
@@ -582,7 +567,6 @@ local function eventListener(event, ...)
         sendWelcomeMessage(username)
     end
 end
-
 
 -- Main event loop
 while true do
