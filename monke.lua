@@ -1,4 +1,4 @@
-local version = "1.10"  -- Current version number
+local version = "1.11"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -266,7 +266,7 @@ local function importAllItemsFromChest()
         totalImported = totalImported + importedAmount
     until importedAmount == 0 
     
-    chatBox.sendMessage("Sucked " .. totalImported .. " item(s) into system", "&lm.o.n.k.e")
+    chatBox.sendMessage("Imported " .. totalImported .. " item(s) into system", "&lm.o.n.k.e")
 end
 
 -- Function to count the number of a specific item in the RS system
@@ -274,7 +274,7 @@ local function countItemInSystem(itemName)
     local fullName = itemMappings[itemName] or itemName
     local itemInfo = rsBridge.getItem({name = fullName})
     if itemInfo then
-        chatBox.sendMessage("There are " .. itemInfo.amount .. " " .. fullName .. "(s) in the system.", "&lm.o.n.k.e")
+        chatBox.sendMessage("There is " .. itemInfo.amount .. " " .. fullName .. "(s) in the system.", "&lm.o.n.k.e")
     else
         chatBox.sendMessage("Error: Item " .. fullName .. " not found in the system.", "&lm.o.n.k.e")
     end
