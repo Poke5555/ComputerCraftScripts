@@ -1,4 +1,4 @@
-local version = "1.11"  -- Current version number
+local version = "1.12"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -521,15 +521,15 @@ local function eventListener(event, ...)
                     chatBox.sendMessage("You lack the authority to command me, peasant...", "&lm.o.n.k.e")
                 end
             elseif subCommand == "playermap" then
-                local player, fullName = subArgs:match("([%w]+) (.+)")
                 if player and permitted and fullName then
+				local player, fullName = subArgs:match("([%w]+) (.+)")
                     handlePlayerMapCommand(player, fullName)
                 else
                     chatBox.sendMessage("Usage: monke playermap <player> <fullName>", "&lm.o.n.k.e")
                 end
             elseif subCommand == "give" or subCommand == "send" or subCommand == "export" then
-                local amount, itemName = subArgs:match("([%w%s]+) (.+)")
-                if amount and itemName and permitted then
+               if amount and itemName and permitted then
+				 local amount, itemName = subArgs:match("([%w%s]+) (.+)")
                     handleGiveCommand(amount, itemName)
                 else
                     chatBox.sendMessage("Usage: monke give <amount> <item>", "&lm.o.n.k.e")
