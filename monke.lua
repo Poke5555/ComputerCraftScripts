@@ -1,4 +1,4 @@
-local version = "1.18"  -- Current version number
+local version = "1.19"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -534,16 +534,13 @@ local function handleCraftCommandMessage(itemMappings, amount, itemName)
 end
 
 -- Function to handle the "monke d<number>" command
-local function handleDiceRollCommand(maxNumber)
-    -- Convert maxNumber to a number
-    local numericMaxNumber = tonumber(maxNumber)
-    if numericMaxNumber then
-        -- Generate a random number between 1 and maxNumber
-        local randomNumber = math.random(1, numericMaxNumber)
-        -- Send the result to the chat
-        chatBox.sendMessage("Rolled a " .. randomNumber .. " (1-" .. numericMaxNumber .. ")", "&lm.o.n.k.e")
+local function handleDiceRollCommand(diceString)
+    local sides = tonumber(diceString:match("(%d+)")) -- Extract the number of sides from the command
+    if sides then
+        local result = math.random(1, sides) -- Generate a random number between 1 and the specified number of sides
+        chatBox.sendMessage("Rolled a " .. result .. " on a " .. sides .. "-sided die.", "&lm.o.n.k.e")
     else
-        chatBox.sendMessage("Usage: monke d<number> (e.g., monke d20)", "&lm.o.n.k.e")
+        chatBox.sendMessage("Invalid dice command. Usage: monke d<number>", "&lm.o.n.k.e")
     end
 end
 
@@ -610,10 +607,15 @@ local function eventListener(event, ...)
                 else
                     chatBox.sendMessage("Usage: monke count <item>", "&lm.o.n.k.e")
                 end
-            elseif subCommand == "d" then
-                handleDiceRollCommand(subArgs)  -- Call the function to handle dice rolls
+			elseif subCommand:match("^d%d+$") then
+				local diceString = subCommand:match("^d(%d+)$")
+				if diceString then
+					handleDiceRollCommand(diceString)
+				else
+					chatBox.sendMessage("Invalid dice command. Usage: monke d<number>", "&lm.o.n.k.e")
+				end
             end
-        end				
+        end			
     elseif event == "playerJoin" then
         local username, dimension = ...
         sendWelcomeMessage(username)
