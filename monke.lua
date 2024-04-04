@@ -1,4 +1,4 @@
-local version = "1.20"  -- Current version number
+local version = "1.21"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -533,32 +533,46 @@ local function handleCraftCommandMessage(itemMappings, amount, itemName)
     end
 end
 
--- Function to handle the "monke d<number>x<number>" command
+-- Function to handle the "monke d<number>" or "monke d<number>x<number>" command
 local function handleDiceRollCommand(diceString, timesToRoll)
-    local sides = tonumber(diceString) -- Extract the number of sides from the command
-    if sides then
-        local totalResult = 0
-        local results = {} -- Store individual dice rolls for messaging
-        
-        for i = 1, timesToRoll do
-            local result = math.random(1, sides) -- Generate a random number between 1 and the specified number of sides
-            totalResult = totalResult + result
-            table.insert(results, result)
-        end
-        
-        local resultMessage = "Rolled " .. timesToRoll .. " " .. sides .. "-sided die: "
-        for i, result in ipairs(results) do
-            resultMessage = resultMessage .. result
-            if i < #results then
-                resultMessage = resultMessage .. ", "
-            end
-        end
-        resultMessage = resultMessage .. ". Total: " .. totalResult
-        
-        chatBox.sendMessage(resultMessage, "&lm.o.n.k.e")
-    else
-        chatBox.sendMessage("Invalid dice command. Usage: monke d<number>x<number>", "&lm.o.n.k.e")
+    local sides, multiplier = diceString:match("(%d+)(x?%d*)") -- Extract the number of sides and optional multiplier from the command
+    
+    if not sides then
+        chatBox.sendMessage("Invalid dice command. Usage: monke d<number>[x<number>]", "&lm.o.n.k.e")
+        return
     end
+    
+    sides = tonumber(sides)
+    if not sides or sides <= 0 then
+        chatBox.sendMessage("Invalid number of sides. Please use a positive integer.", "&lm.o.n.k.e")
+        return
+    end
+    
+    timesToRoll = tonumber(timesToRoll) or 1 -- Default to rolling once if no multiplier provided
+    if timesToRoll <= 0 then
+        chatBox.sendMessage("Invalid number of rolls. Please use a positive integer.", "&lm.o.n.k.e")
+        return
+    end
+    
+    local totalResult = 0
+    local results = {} -- Store individual dice rolls for messaging
+    
+    for i = 1, timesToRoll do
+        local result = math.random(1, sides) -- Generate a random number between 1 and the specified number of sides
+        totalResult = totalResult + result
+        table.insert(results, result)
+    end
+    
+    local resultMessage = "Rolled " .. timesToRoll .. " " .. sides .. "-sided die: "
+    for i, result in ipairs(results) do
+        resultMessage = resultMessage .. result
+        if i < #results then
+            resultMessage = resultMessage .. ", "
+        end
+    end
+    resultMessage = resultMessage .. ". Total: " .. totalResult
+    
+    chatBox.sendMessage(resultMessage, "&lm.o.n.k.e")
 end
 
 -- Event listener function
@@ -572,7 +586,16 @@ local function eventListener(event, ...)
             local subCommand, subArgs = args:match("^%s*([%w]+)%s*(.*)$")
             
             -- Check if the subCommand is a dice command
-            if subCommand:match("^d%d+[xX]%d+$") then
+            if subCommand:match("^d%d+$") then
+                local diceString = subCommand:match("^d(%d+)$")
+                if diceString then
+                    handleDiceRollCommand(diceString, 1)  -- Assume multiplier is 1 if not specified
+                    return -- Exit the function after handling the dice command
+                else
+                    chatBox.sendMessage("Invalid dice command. Usage: monke d<number>[x<number>]", "&lm.o.n.k.e")
+                    return
+                end
+            elseif subCommand:match("^d%d+[xX]%d+$") then
                 local diceString, multiplier = subCommand:match("^d(%d+)[xX](%d+)$")
                 if diceString and multiplier then
                     local diceNumber = tonumber(diceString)
@@ -585,11 +608,11 @@ local function eventListener(event, ...)
                         return
                     end
                 else
-                    chatBox.sendMessage("Invalid dice command. Usage: monke d<number>x<number>", "&lm.o.n.k.e")
+                    chatBox.sendMessage("Invalid dice command. Usage: monke d<number>[x<number>]", "&lm.o.n.k.e")
                     return
                 end
             end
-            
+			
             local permitted = isPermittedUser(username)
             if not permitted then
                 chatBox.sendMessage("You lack the authority to command me, peasant...", "&lm.o.n.k.e")
