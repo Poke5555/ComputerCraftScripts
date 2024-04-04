@@ -1,4 +1,4 @@
-local version = "1.17"  -- Current version number
+local version = "1.18"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -533,6 +533,20 @@ local function handleCraftCommandMessage(itemMappings, amount, itemName)
     end
 end
 
+-- Function to handle the "monke d<number>" command
+local function handleDiceRollCommand(maxNumber)
+    -- Convert maxNumber to a number
+    local numericMaxNumber = tonumber(maxNumber)
+    if numericMaxNumber then
+        -- Generate a random number between 1 and maxNumber
+        local randomNumber = math.random(1, numericMaxNumber)
+        -- Send the result to the chat
+        chatBox.sendMessage("Rolled a " .. randomNumber .. " (1-" .. numericMaxNumber .. ")", "&lm.o.n.k.e")
+    else
+        chatBox.sendMessage("Usage: monke d<number> (e.g., monke d20)", "&lm.o.n.k.e")
+    end
+end
+
 -- Event listener function
 local function eventListener(event, ...)
     if event == "chat" then
@@ -596,8 +610,10 @@ local function eventListener(event, ...)
                 else
                     chatBox.sendMessage("Usage: monke count <item>", "&lm.o.n.k.e")
                 end
+            elseif subCommand == "d" then
+                handleDiceRollCommand(subArgs)  -- Call the function to handle dice rolls
             end
-        end
+        end				
     elseif event == "playerJoin" then
         local username, dimension = ...
         sendWelcomeMessage(username)
