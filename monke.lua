@@ -1,4 +1,4 @@
-local version = "1.21"  -- Current version number
+local version = "1.22"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -563,7 +563,7 @@ local function handleDiceRollCommand(diceString, timesToRoll)
         table.insert(results, result)
     end
     
-    local resultMessage = "Rolled " .. timesToRoll .. " " .. sides .. "-sided die: "
+    local resultMessage = "Rolled " .. timesToRoll .. " d" .. sides .. "(s) "
     for i, result in ipairs(results) do
         resultMessage = resultMessage .. result
         if i < #results then
