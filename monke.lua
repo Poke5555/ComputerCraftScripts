@@ -1,4 +1,4 @@
-local version = "1.15"  -- Current version number
+local version = "1.16"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -242,8 +242,37 @@ local function exportItemsToChest(item, amount)
     end
 end
 
+-- Function to export items to a chest below the RS Bridge
+local function exportItemsToChest(item, amount)
+    local direction = "down"
+    local fullName = itemMappings[item.name] or item.name
+    local itemInfo = rsBridge.getItem({name = fullName})
+    
+    if itemInfo then
+        local exportedAmount = rsBridge.exportItem({name = fullName, count = amount}, direction)
+        local message = (exportedAmount > 0) and ("Sent " .. exportedAmount .. " " .. fullName .. "(s)") or ("Error " .. itemInfo.amount .. " " .. fullName .. "(s) in system.")
+        chatBox.sendMessage(message, "&lm.o.n.k.e")
+    else
+        chatBox.sendMessage("Error: Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
+    end
+end
+
 -- Define the handleGiveCommand function
 local function handleGiveCommand(amount, itemName)
+    local numericAmount = tonumber(amount)
+    if not numericAmount then
+        numericAmount = wordsToNumber(amount)
+    end
+    if numericAmount then
+        itemName = itemName:lower()
+        exportItemsToChest({name = itemName}, numericAmount)
+    else
+        chatBox.sendMessage("Error: Invalid amount.", "&lm.o.n.k.e")
+    end
+end
+
+-- Define the handleShareCommand function
+local function handleShareCommand(amount, itemName)
     local numericAmount = tonumber(amount)
     if not numericAmount then
         numericAmount = wordsToNumber(amount)
@@ -266,7 +295,7 @@ local function importAllItemsFromChest()
         totalImported = totalImported + importedAmount
     until importedAmount == 0 
     
-    chatBox.sendMessage("Sucked " .. totalImported .. " item(s) into system", "&lm.o.n.k.e")
+    chatBox.sendMessage("Imported " .. totalImported .. " item(s) into system", "&lm.o.n.k.e")
 end
 
 -- Function to count the number of a specific item in the RS system
@@ -534,6 +563,13 @@ local function eventListener(event, ...)
                     handleGiveCommand(amount, itemName)
                 else
                     chatBox.sendMessage("Usage: monke give <amount> <item>", "&lm.o.n.k.e")
+                end
+			elseif subCommand == "share" then
+                local amount, itemName = subArgs:match("([%w%s]+) (.+)")
+                if amount and itemName then
+                    handleShareCommand(amount, itemName)
+                else
+                    chatBox.sendMessage("Usage: monke share <amount> <item>", "&lm.o.n.k.e")
                 end
             elseif subCommand == "map" then
                 local shortName, fullName = subArgs:match("([%w%s]+) (.+)")
