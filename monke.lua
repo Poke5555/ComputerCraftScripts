@@ -1,4 +1,4 @@
-local version = "1.16"  -- Current version number
+local version = "1.17"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -243,7 +243,7 @@ local function exportItemsToChest(item, amount)
 end
 
 -- Function to export items to a chest below the RS Bridge
-local function exportItemsToChest(item, amount)
+local function exportItemsToShareChest(item, amount)
     local direction = "down"
     local fullName = itemMappings[item.name] or item.name
     local itemInfo = rsBridge.getItem({name = fullName})
@@ -279,7 +279,7 @@ local function handleShareCommand(amount, itemName)
     end
     if numericAmount then
         itemName = itemName:lower()
-        exportItemsToChest({name = itemName}, numericAmount)
+        exportItemsToShareChest({name = itemName}, numericAmount)
     else
         chatBox.sendMessage("Error: Invalid amount.", "&lm.o.n.k.e")
     end
