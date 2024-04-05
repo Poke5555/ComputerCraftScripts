@@ -1,4 +1,4 @@
-local version = "1.23"  -- Current version number
+local version = "1.24"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -445,7 +445,7 @@ local function handleFindCommand(player)
             local dimension = (pos.dimension or ""):gsub("^.+:", "")  -- Remove prefix from dimension name
             local message = player .. " is "
             if pos.x and pos.y and pos.z and dimension then
-                message = message .. "at (" .. pos.x .. ", " .. pos.y .. ", " .. pos.z .. ") in the " .. dimension .. "."
+                message = message .. "xaero-waypoint:" .. player .. "'s location:S:" .. pos.x .. ":" .. pos.y .. ":" .. pos.z .. ":9:false:0:Internal-" .. dimension .. "-waypoints"
             else
                 message = message .. "not a recognized player"
             end
