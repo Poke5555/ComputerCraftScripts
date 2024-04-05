@@ -1,4 +1,4 @@
-local version = "1.22"  -- Current version number
+local version = "1.23"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -257,6 +257,21 @@ local function exportItemsToShareChest(item, amount)
     end
 end
 
+-- Function to export items to inventory left of the RS Bridge
+local function exportItemsToLoadChest(item, amount)
+    local direction = "left"
+    local fullName = itemMappings[item.name] or item.name
+    local itemInfo = rsBridge.getItem({name = fullName})
+    
+    if itemInfo then
+        local exportedAmount = rsBridge.exportItem({name = fullName, count = amount}, direction)
+        local message = (exportedAmount > 0) and ("Loaded " .. exportedAmount .. " " .. fullName .. "(s)") or ("Error " .. itemInfo.amount .. " " .. fullName .. "(s) in system.")
+        chatBox.sendMessage(message, "&lm.o.n.k.e")
+    else
+        chatBox.sendMessage("Error: Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
+    end
+end
+
 -- Define the handleGiveCommand function
 local function handleGiveCommand(amount, itemName)
     local numericAmount = tonumber(amount)
@@ -285,9 +300,36 @@ local function handleShareCommand(amount, itemName)
     end
 end
 
+-- Define the handleLoadCommand function
+local function handleLoadCommand(amount, itemName)
+    local numericAmount = tonumber(amount)
+    if not numericAmount then
+        numericAmount = wordsToNumber(amount)
+    end
+    if numericAmount then
+        itemName = itemName:lower()
+        exportItemsToLoadChest({name = itemName}, numericAmount)
+    else
+        chatBox.sendMessage("Error: Invalid amount.", "&lm.o.n.k.e")
+    end
+end
+
 -- Function to import all items from the chest above the RS Bridge into the RS system
 local function importAllItemsFromChest()
     local direction = "up"
+    local totalImported = 0 
+    
+    repeat
+        local importedAmount = rsBridge.importItem({}, direction)
+        totalImported = totalImported + importedAmount
+    until importedAmount == 0 
+    
+    chatBox.sendMessage("Imported " .. totalImported .. " item(s) into system", "&lm.o.n.k.e")
+end
+
+-- Function to unload all items from the chest above the RS Bridge into the RS system
+local function unloadAllItemsFromChest()
+    local direction = "left"
     local totalImported = 0 
     
     repeat
@@ -643,8 +685,15 @@ local function eventListener(event, ...)
                 else
                     chatBox.sendMessage("Usage: monke share <amount> <item>", "&lm.o.n.k.e")
                 end
+			elseif subCommand == "load" then
+                local amount, itemName = subArgs:match("([%w%s]+) (.+)")
+                if amount and itemName then
+                    handleLoadCommand(amount, itemName)
+                else
+                    chatBox.sendMessage("Usage: monke load <amount> <item>", "&lm.o.n.k.e")
+                end
             elseif subCommand == "map" then
-                local shortName, fullName = subArgs:match("([%w%s]+) (.+)")
+                local shortName, fullName = subArgs:match("(%S+)%s+(.+)")
                 if shortName and fullName then
                     handleMapCommand(shortName, fullName)
                 else
@@ -661,6 +710,8 @@ local function eventListener(event, ...)
                 end
             elseif subCommand == "suck" or subCommand == "import" or subCommand == "clear" then
                 importAllItemsFromChest()
+			elseif subCommand == "unload" then
+                unloadAllItemsFromChest()
             elseif subCommand == "count" then
                 local itemName = subArgs:match("^%s*(.+)$")
                 if itemName then
