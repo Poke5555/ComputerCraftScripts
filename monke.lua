@@ -1,4 +1,4 @@
-local version = "1.25"  -- Current version number
+local version = "1.26"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -278,7 +278,7 @@ local function exportItemsToLoadChest(item, amount)
         -- Export items until the remaining amount is zero
         while remainingAmount > 0 do
             -- Export the remaining amount or 64 (whichever is smaller) in each iteration
-            local exportedAmount = rsBridge.exportItem({name = fullName, count = math.min(remainingAmount, 128)}, direction, true)  -- The 'true' parameter ignores inventory size
+            local exportedAmount = rsBridge.exportItem({name = fullName, count = math.min(remainingAmount, 4096)}, direction, true)  -- The 'true' parameter ignores inventory size
             
             -- Update the remaining amount
             remainingAmount = remainingAmount - exportedAmount
@@ -359,10 +359,11 @@ end
 -- Function to unload all items from the inventory left of the RS Bridge into the RS system with formatted numbers
 local function unloadAllItemsFromChest()
     local direction = "left"
+    local batchSize = 4096  -- Adjust the batch size as needed
     local totalImported = 0 
     
     repeat
-        local importedAmount = rsBridge.importItem({}, direction)
+        local importedAmount = rsBridge.importItem({ count = batchSize }, direction)
         totalImported = totalImported + importedAmount
     until importedAmount == 0 
     
