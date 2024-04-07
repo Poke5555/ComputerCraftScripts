@@ -1,4 +1,4 @@
-local version = "1.24"  -- Current version number
+local version = "1.25"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -227,7 +227,7 @@ local function wordsToNumber(words)
     return total + lastNumber
 end
 
--- Function to export items to a chest above the RS Bridge
+-- Function to export items to a chest above the RS Bridge with formatted numbers
 local function exportItemsToChest(item, amount)
     local direction = "up"
     local fullName = itemMappings[item.name] or item.name
@@ -235,14 +235,15 @@ local function exportItemsToChest(item, amount)
     
     if itemInfo then
         local exportedAmount = rsBridge.exportItem({name = fullName, count = amount}, direction)
-        local message = (exportedAmount > 0) and ("Sent " .. exportedAmount .. " " .. fullName .. "(s)") or ("Error " .. itemInfo.amount .. " " .. fullName .. "(s) in system.")
+        local formattedExportedAmount = tostring(exportedAmount):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+        local message = (exportedAmount > 0) and ("Sent " .. formattedExportedAmount .. " " .. fullName .. "(s)") or ("Error " .. itemInfo.amount .. " " .. fullName .. "(s) in system.")
         chatBox.sendMessage(message, "&lm.o.n.k.e")
     else
         chatBox.sendMessage("Error: Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
     end
 end
 
--- Function to export items to a chest below the RS Bridge
+-- Function to export items to a chest below the RS Bridge with commas in exported amount
 local function exportItemsToShareChest(item, amount)
     local direction = "down"
     local fullName = itemMappings[item.name] or item.name
@@ -250,22 +251,49 @@ local function exportItemsToShareChest(item, amount)
     
     if itemInfo then
         local exportedAmount = rsBridge.exportItem({name = fullName, count = amount}, direction)
-        local message = (exportedAmount > 0) and ("Sent " .. exportedAmount .. " " .. fullName .. "(s)") or ("Error " .. itemInfo.amount .. " " .. fullName .. "(s) in system.")
+        local formattedExportedAmount = tostring(exportedAmount):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+        local message = (exportedAmount > 0) and ("Sent " .. formattedExportedAmount .. " " .. fullName .. "(s)") or ("Error: Failed to send items.")
         chatBox.sendMessage(message, "&lm.o.n.k.e")
     else
         chatBox.sendMessage("Error: Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
     end
 end
 
--- Function to export items to inventory left of the RS Bridge
+-- Function to export items to inventory left of the RS Bridge with commas in exported amount and ignoring inventory size
 local function exportItemsToLoadChest(item, amount)
     local direction = "left"
     local fullName = itemMappings[item.name] or item.name
     local itemInfo = rsBridge.getItem({name = fullName})
     
     if itemInfo then
-        local exportedAmount = rsBridge.exportItem({name = fullName, count = amount}, direction)
-        local message = (exportedAmount > 0) and ("Loaded " .. exportedAmount .. " " .. fullName .. "(s)") or ("Error " .. itemInfo.amount .. " " .. fullName .. "(s) in system.")
+        -- Check if the specified amount exceeds the available amount in the system
+        if amount > itemInfo.amount then
+            chatBox.sendMessage("Error: Insufficient amount of " .. fullName .. " in the system.", "&lm.o.n.k.e")
+            return
+        end
+        
+        -- Keep track of the remaining amount to export
+        local remainingAmount = amount
+        
+        -- Export items until the remaining amount is zero
+        while remainingAmount > 0 do
+            -- Export the remaining amount or 64 (whichever is smaller) in each iteration
+            local exportedAmount = rsBridge.exportItem({name = fullName, count = math.min(remainingAmount, 128)}, direction, true)  -- The 'true' parameter ignores inventory size
+            
+            -- Update the remaining amount
+            remainingAmount = remainingAmount - exportedAmount
+            
+            -- If no items were exported in this iteration, break the loop
+            if exportedAmount == 0 then
+                break
+            end
+        end
+        
+        -- Format the exported amount with commas
+        local formattedExportedAmount = tostring(amount - remainingAmount):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+        
+        -- Send the appropriate message
+        local message = (amount - remainingAmount > 0) and ("Loaded " .. formattedExportedAmount .. " " .. fullName .. "(s)") or ("Error: Failed to load items.")
         chatBox.sendMessage(message, "&lm.o.n.k.e")
     else
         chatBox.sendMessage("Error: Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
@@ -314,7 +342,7 @@ local function handleLoadCommand(amount, itemName)
     end
 end
 
--- Function to import all items from the chest above the RS Bridge into the RS system
+-- Function to import all items from the chest above the RS Bridge into the RS system with formatted numbers
 local function importAllItemsFromChest()
     local direction = "up"
     local totalImported = 0 
@@ -324,10 +352,11 @@ local function importAllItemsFromChest()
         totalImported = totalImported + importedAmount
     until importedAmount == 0 
     
-    chatBox.sendMessage("Imported " .. totalImported .. " item(s) into system", "&lm.o.n.k.e")
+    local formattedTotalImported = tostring(totalImported):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+    chatBox.sendMessage("Imported " .. formattedTotalImported .. " item(s) into system", "&lm.o.n.k.e")
 end
 
--- Function to unload all items from the chest above the RS Bridge into the RS system
+-- Function to unload all items from the inventory left of the RS Bridge into the RS system with formatted numbers
 local function unloadAllItemsFromChest()
     local direction = "left"
     local totalImported = 0 
@@ -337,15 +366,17 @@ local function unloadAllItemsFromChest()
         totalImported = totalImported + importedAmount
     until importedAmount == 0 
     
-    chatBox.sendMessage("Imported " .. totalImported .. " item(s) into system", "&lm.o.n.k.e")
+    local formattedTotalImported = tostring(totalImported):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+    chatBox.sendMessage("Imported " .. formattedTotalImported .. " item(s) into system", "&lm.o.n.k.e")
 end
 
--- Function to count the number of a specific item in the RS system
+-- Function to count the number of a specific item in the RS system with formatted numbers
 local function countItemInSystem(itemName)
     local fullName = itemMappings[itemName] or itemName
     local itemInfo = rsBridge.getItem({name = fullName})
     if itemInfo then
-        chatBox.sendMessage("There are " .. itemInfo.amount .. " " .. fullName .. "(s) in the system.", "&lm.o.n.k.e")
+        local formattedAmount = tostring(itemInfo.amount):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+        chatBox.sendMessage("There are " .. formattedAmount .. " " .. fullName .. "(s) in the system.", "&lm.o.n.k.e")
     else
         chatBox.sendMessage("Error: Item " .. fullName .. " not found in the system.", "&lm.o.n.k.e")
     end
@@ -411,20 +442,6 @@ local function sendWelcomeMessage(player)
     end
 end
 
--- Function to craft items in the RS system
-local function craftItems(item, amount)
-    local fullName = itemMappings[item.name] or item.name
-    local craftedAmount = rsBridge.craftItem({name = fullName, count = amount})
-    
-    if craftedAmount then
-        chatBox.sendMessage("Making " .. amount .. " " .. fullName .. "(s)", "&lm.o.n.k.e")
-    elseif rsBridge.isItemCraftable({name = fullName}) then
-        chatBox.sendMessage("Error: Insufficient resources to craft " .. amount .. " " .. fullName .. "(s).", "&lm.o.n.k.e")
-    else
-        chatBox.sendMessage("Error: Crafting pattern missing for " .. fullName .. ".", "&lm.o.n.k.e")
-    end
-end
-
 -- Function to handle the "monke find" command
 local function handleFindCommand(player)
     -- Convert player name to lowercase for case-insensitive lookup
@@ -458,13 +475,16 @@ local function handleFindCommand(player)
     end
 end
 
--- Function to handle the "craft" command
+-- Function to handle the "craft" command with formatted numbers
 local function handleCraftCommand(itemMappings, craftAmount, craftItem)
     -- Convert words to numbers if necessary
     local numericAmount = tonumber(craftAmount)
     if not numericAmount then
         numericAmount = wordsToNumber(craftAmount)
     end
+    
+    -- Format numericAmount with commas
+    local formattedAmount = tostring(numericAmount):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
     
     -- Map the item name using itemMappings
     local mappedCraftItem = itemMappings[craftItem:lower()] or craftItem
@@ -536,7 +556,9 @@ local function handleCraftCommand(itemMappings, craftAmount, craftItem)
                         end
                         if displayName then break end
                     end
-                    itemsMissing[name] = { displayName = displayName, amount = missingAmount, multiplier = craftingMultiplier }
+                    -- Format missing amount with commas
+                    local formattedMissingAmount = tostring(missingAmount):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+                    itemsMissing[name] = { displayName = displayName, amount = formattedMissingAmount, multiplier = craftingMultiplier }
                 end
             else
                 chatBox.sendMessage("Failed to retrieve information for " .. name, "&lm.o.n.k.e")
@@ -554,24 +576,13 @@ local function handleCraftCommand(itemMappings, craftAmount, craftItem)
         else
             -- If there are enough items, perform the craft
             rsBridge.craftItem({ name = mappedCraftItem, count = numericAmount }) -- Ensure that only <craftItem> is crafted
-            chatBox.sendMessage("Crafting " .. numericAmount .. " " .. mappedCraftItem .. ".", "&lm.o.n.k.e")
+            chatBox.sendMessage("Crafting " .. formattedAmount .. " " .. mappedCraftItem .. ".", "&lm.o.n.k.e")
         end
     else
         if not errorMessage then
             errorMessage = "Unknown error"
         end
         chatBox.sendMessage("Missing pattern for " .. mappedCraftItem .. ".", "&lm.o.n.k.e")
-    end
-end
-
--- Function to handle the "craft" command
-local function handleCraftCommandMessage(itemMappings, amount, itemName)
-    local numericAmount = tonumber(amount)
-    if numericAmount then
-        itemName = itemName:lower()
-        handleCraftCommand(itemMappings, numericAmount, itemName)
-    else
-        chatBox.sendMessage("Error: Invalid amount.", "&lm.o.n.k.e")
     end
 end
 
