@@ -1,4 +1,4 @@
-local version = "1.27"  -- Current version number
+local version = "1.28"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -303,8 +303,6 @@ local function handleGiveCommand(amount, itemName)
     if numericAmount then
         itemName = itemName:lower()
         exportItemsToChest({name = itemName}, numericAmount)
-    else
-        chatBox.sendMessage("Error: Invalid amount.", "&lm.o.n.k.e")
     end
 end
 
@@ -317,8 +315,6 @@ local function handleShareCommand(amount, itemName)
     if numericAmount then
         itemName = itemName:lower()
         exportItemsToShareChest({name = itemName}, numericAmount)
-    else
-        chatBox.sendMessage("Error: Invalid amount.", "&lm.o.n.k.e")
     end
 end
 
@@ -331,8 +327,6 @@ local function handleLoadCommand(amount, itemName)
     if numericAmount then
         itemName = itemName:lower()
         exportItemsToLoadChest({name = itemName}, numericAmount)
-    else
-        chatBox.sendMessage("Error: Invalid amount.", "&lm.o.n.k.e")
     end
 end
 
