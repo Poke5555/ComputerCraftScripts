@@ -1,4 +1,4 @@
-local version = "1.26"  -- Current version number
+local version = "1.27"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -266,12 +266,6 @@ local function exportItemsToLoadChest(item, amount)
     local itemInfo = rsBridge.getItem({name = fullName})
     
     if itemInfo then
-        -- Check if the specified amount exceeds the available amount in the system
-        if amount > itemInfo.amount then
-            chatBox.sendMessage("Error: Insufficient amount of " .. fullName .. " in the system.", "&lm.o.n.k.e")
-            return
-        end
-        
         -- Keep track of the remaining amount to export
         local remainingAmount = amount
         
