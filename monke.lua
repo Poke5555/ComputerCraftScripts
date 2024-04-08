@@ -1,4 +1,4 @@
-local version = "1.28"  -- Current version number
+local version = "1.29"  -- Current version number
 local updateURL = "https://raw.githubusercontent.com/Poke5555/ComputerCraftScripts/main/monke.lua"
 
 -- Function to check for updates
@@ -236,10 +236,10 @@ local function exportItemsToChest(item, amount)
     if itemInfo then
         local exportedAmount = rsBridge.exportItem({name = fullName, count = amount}, direction)
         local formattedExportedAmount = tostring(exportedAmount):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
-        local message = (exportedAmount > 0) and ("Sent " .. formattedExportedAmount .. " " .. fullName .. "(s)") or ("Error " .. itemInfo.amount .. " " .. fullName .. "(s) in system.")
+        local message = (exportedAmount > 0) and ("Exported " .. formattedExportedAmount .. " " .. fullName .. "(s)") or ("Error " .. itemInfo.amount .. " " .. fullName .. "(s) in system.")
         chatBox.sendMessage(message, "&lm.o.n.k.e")
     else
-        chatBox.sendMessage("Error: Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
+        chatBox.sendMessage("Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
     end
 end
 
@@ -252,10 +252,10 @@ local function exportItemsToShareChest(item, amount)
     if itemInfo then
         local exportedAmount = rsBridge.exportItem({name = fullName, count = amount}, direction)
         local formattedExportedAmount = tostring(exportedAmount):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
-        local message = (exportedAmount > 0) and ("Sent " .. formattedExportedAmount .. " " .. fullName .. "(s)") or ("Error: Failed to send items.")
+        local message = (exportedAmount > 0) and ("Shared " .. formattedExportedAmount .. " " .. fullName .. "(s)") or ("Failed to send items.")
         chatBox.sendMessage(message, "&lm.o.n.k.e")
     else
-        chatBox.sendMessage("Error: Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
+        chatBox.sendMessage("Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
     end
 end
 
@@ -287,10 +287,10 @@ local function exportItemsToLoadChest(item, amount)
         local formattedExportedAmount = tostring(amount - remainingAmount):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
         
         -- Send the appropriate message
-        local message = (amount - remainingAmount > 0) and ("Loaded " .. formattedExportedAmount .. " " .. fullName .. "(s)") or ("Error: Failed to load items.")
+        local message = (amount - remainingAmount > 0) and ("Loaded " .. formattedExportedAmount .. " " .. fullName .. "(s)") or ("Failed to load items.")
         chatBox.sendMessage(message, "&lm.o.n.k.e")
     else
-        chatBox.sendMessage("Error: Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
+        chatBox.sendMessage("Item " .. fullName .. " does not exist in the system.", "&lm.o.n.k.e")
     end
 end
 
@@ -365,9 +365,9 @@ local function countItemInSystem(itemName)
     local itemInfo = rsBridge.getItem({name = fullName})
     if itemInfo then
         local formattedAmount = tostring(itemInfo.amount):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
-        chatBox.sendMessage("There are " .. formattedAmount .. " " .. fullName .. "(s) in the system.", "&lm.o.n.k.e")
+        chatBox.sendMessage(formattedAmount .. " " .. fullName .. "(s) in the system.", "&lm.o.n.k.e")
     else
-        chatBox.sendMessage("Error: Item " .. fullName .. " not found in the system.", "&lm.o.n.k.e")
+        chatBox.sendMessage("Item " .. fullName .. " not found in the system.", "&lm.o.n.k.e")
     end
 end
  
@@ -580,7 +580,7 @@ local function handleDiceRollCommand(diceString, timesToRoll)
     local sides, multiplier = diceString:match("(%d+)(x?%d*)") -- Extract the number of sides and optional multiplier from the command
     
     if not sides then
-        chatBox.sendMessage("Invalid dice command. Usage: monke d<number>[x<number>]", "&lm.o.n.k.e")
+        chatBox.sendMessage("monke d<number>[x<number>]", "&lm.o.n.k.e")
         return
     end
     
@@ -634,7 +634,7 @@ local function eventListener(event, ...)
                     handleDiceRollCommand(diceString, 1)  -- Assume multiplier is 1 if not specified
                     return -- Exit the function after handling the dice command
                 else
-                    chatBox.sendMessage("Invalid dice command. Usage: monke d<number>[x<number>]", "&lm.o.n.k.e")
+                    chatBox.sendMessage("monke d<number>[x<number>]", "&lm.o.n.k.e")
                     return
                 end
             elseif subCommand:match("^d%d+[xX]%d+$") then
@@ -645,13 +645,7 @@ local function eventListener(event, ...)
                     if diceNumber and diceNumber > 0 and timesToRoll and timesToRoll > 0 then
                         handleDiceRollCommand(diceString, timesToRoll)
                         return -- Exit the function after handling the dice command
-                    else
-                        chatBox.sendMessage("Invalid dice parameters. Please use positive integers.", "&lm.o.n.k.e")
-                        return
                     end
-                else
-                    chatBox.sendMessage("Invalid dice command. Usage: monke d<number>[x<number>]", "&lm.o.n.k.e")
-                    return
                 end
             end
 			
@@ -669,35 +663,35 @@ local function eventListener(event, ...)
                 if player and fullName then
                     handlePlayerMapCommand(player, fullName)
                 else
-                    chatBox.sendMessage("Usage: monke playermap <player> <fullName>", "&lm.o.n.k.e")
+                    chatBox.sendMessage("monke playermap <player> <fullName>", "&lm.o.n.k.e")
                 end
             elseif subCommand == "give" or subCommand == "send" or subCommand == "export" then
                 local amount, itemName = subArgs:match("([%w%s]+) (.+)")
                 if amount and itemName then
                     handleGiveCommand(amount, itemName)
                 else
-                    chatBox.sendMessage("Usage: monke give <amount> <item>", "&lm.o.n.k.e")
+                    chatBox.sendMessage("monke give <amount> <item>", "&lm.o.n.k.e")
                 end
 			elseif subCommand == "share" then
                 local amount, itemName = subArgs:match("([%w%s]+) (.+)")
                 if amount and itemName then
                     handleShareCommand(amount, itemName)
                 else
-                    chatBox.sendMessage("Usage: monke share <amount> <item>", "&lm.o.n.k.e")
+                    chatBox.sendMessage("monke share <amount> <item>", "&lm.o.n.k.e")
                 end
 			elseif subCommand == "load" then
                 local amount, itemName = subArgs:match("([%w%s]+) (.+)")
                 if amount and itemName then
                     handleLoadCommand(amount, itemName)
                 else
-                    chatBox.sendMessage("Usage: monke load <amount> <item>", "&lm.o.n.k.e")
+                    chatBox.sendMessage("monke load <amount> <item>", "&lm.o.n.k.e")
                 end
             elseif subCommand == "map" then
                 local shortName, fullName = subArgs:match("(%S+)%s+(.+)")
                 if shortName and fullName then
                     handleMapCommand(shortName, fullName)
                 else
-                    chatBox.sendMessage("Usage: monke map <shortName> <fullName>", "&lm.o.n.k.e")
+                    chatBox.sendMessage("monke map <shortName> <fullName>", "&lm.o.n.k.e")
                 end
             elseif subCommand == "craft" or subCommand == "make" then
                 local amount, itemName = subArgs:match("([%w%s]+) (.+)")
@@ -706,7 +700,7 @@ local function eventListener(event, ...)
                     itemName = itemName:lower()
                     handleCraftCommand(itemMappings, numericAmount, itemName) -- Pass itemMappings as an argument
                 else
-                    chatBox.sendMessage("Usage: monke craft <amount> <item>", "&lm.o.n.k.e")
+                    chatBox.sendMessage("monke craft <amount> <item>", "&lm.o.n.k.e")
                 end
             elseif subCommand == "suck" or subCommand == "import" or subCommand == "clear" then
                 importAllItemsFromChest()
@@ -717,7 +711,7 @@ local function eventListener(event, ...)
                 if itemName then
                     countItemInSystem(itemName:lower())
                 else
-                    chatBox.sendMessage("Usage: monke count <item>", "&lm.o.n.k.e")
+                    chatBox.sendMessage("monke count <item>", "&lm.o.n.k.e")
                 end
             end
         end			
